@@ -4,7 +4,6 @@ dotenv.config();
 import { AppModule } from './app.module';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-// import { ValidationPipe } from '@nestjs/common';
 import { AxiosErrorInterceptor } from './common/filters/axios-error-interceptor';
 import { ExceptionGlobalFilter } from './common/filters/exception-global-filter';
 import { ValidationPipe } from '@nestjs/common';

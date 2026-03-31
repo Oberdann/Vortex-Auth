@@ -1,4 +1,3 @@
-import axios from 'axios';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -11,13 +10,15 @@ import {
 import { RegisterDto } from './dto/input/register-dto';
 import { LoginDto } from './dto/input/login-dto';
 import { RefreshTokenDto } from './dto/input/refresh-token-dto';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly jwtService: JwtService) {}
-
-  private USERS_SERVICE_URL =
-    process.env.USERS_SERVICE_URL || 'http://localhost:3003/api/v1/users';
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly httpService: HttpService,
+  ) {}
 
   @Post('register')
   @HttpCode(200)
@@ -26,11 +27,13 @@ export class AuthController {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const response = await axios.post(this.USERS_SERVICE_URL, {
-      name,
-      email,
-      password: hashedPassword,
-    });
+    const response = await firstValueFrom(
+      this.httpService.post(`${process.env.USERS_SERVICE_URL}`, {
+        name,
+        email,
+        password: hashedPassword,
+      }),
+    );
 
     return response.data;
   }
@@ -44,7 +47,7 @@ export class AuthController {
       throw new UnauthorizedException('Email ou senha inválidos.');
     }
 
-    const payload = { sub: user.id, email: user.email, roles: user.roles };
+    const payload = { id: user.id, email: user.email, roles: user.roles };
 
     return {
       access_token: this.jwtService.sign(payload, { expiresIn: '1d' }),
@@ -64,7 +67,11 @@ export class AuthController {
   }
 
   private async validateUser(email: string, password: string) {
-    const data = await axios.get(`${this.USERS_SERVICE_URL}/by-email/${email}`);
+    const data = await firstValueFrom(
+      this.httpService.get(
+        `${process.env.USERS_SERVICE_URL}/by-email/${email}`,
+      ),
+    );
 
     const user = data?.data?.data;
 
