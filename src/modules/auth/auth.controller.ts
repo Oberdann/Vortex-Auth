@@ -28,7 +28,7 @@ export class AuthController {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const response = await firstValueFrom(
-      this.httpService.post(`${process.env.USERS_SERVICE_URL}`, {
+      this.httpService.post(`${process.env.USERS_SERVICE_URL}/users`, {
         name,
         email,
         password: hashedPassword,
@@ -69,7 +69,7 @@ export class AuthController {
   private async validateUser(email: string, password: string) {
     const data = await firstValueFrom(
       this.httpService.get(
-        `${process.env.USERS_SERVICE_URL}/by-email/${email}`,
+        `${process.env.USERS_SERVICE_URL}/users/by-email/${email}`,
       ),
     );
 
