@@ -75,7 +75,7 @@ describe('AuthController', () => {
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(httpService.post).toHaveBeenCalledWith(
-        `${process.env.USERS_SERVICE_URL}`,
+        `${process.env.USERS_SERVICE_URL}/users`,
         expect.objectContaining({
           name: dto.name,
           email: dto.email,
