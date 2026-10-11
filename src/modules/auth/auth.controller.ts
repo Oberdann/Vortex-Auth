@@ -25,13 +25,11 @@ export class AuthController {
   async register(@Body() body: RegisterDto) {
     const { name, email, password } = body;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const response = await firstValueFrom(
       this.httpService.post(`${process.env.USERS_SERVICE_URL}/users`, {
         name,
         email,
-        password: hashedPassword,
+        password,
       }),
     );
 
