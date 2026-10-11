@@ -47,7 +47,7 @@ export class AuthController {
       throw new UnauthorizedException('Email ou senha inválidos.');
     }
 
-    const payload = { id: user.id, email: user.email, roles: user.roles };
+    const payload = { sub: user.id, email: user.email, roles: user.roles };
 
     return {
       access_token: this.jwtService.sign(payload, { expiresIn: '1d' }),
