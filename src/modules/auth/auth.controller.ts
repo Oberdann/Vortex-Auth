@@ -18,7 +18,7 @@ export class AuthController {
   constructor(
     private readonly jwtService: JwtService,
     private readonly httpService: HttpService,
-  ) {}
+  ) { }
 
   @Post('register')
   @HttpCode(200)
@@ -47,22 +47,33 @@ export class AuthController {
       throw new UnauthorizedException('Email ou senha inválidos.');
     }
 
-    const payload = { sub: user.id, email: user.email, roles: user.roles };
-
-    return {
-      access_token: this.jwtService.sign(payload, { expiresIn: '1d' }),
-      refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
-    };
+    return this.createTokens(user.id, user.email, user.roles);
   }
 
   @Post('refresh')
   @HttpCode(200)
   refreshToken(@Body() body: RefreshTokenDto) {
-    const payload = this.jwtService.verify(body.refreshToken);
+    const payload = this.jwtService.verify<{
+      sub: string;
+      email: string;
+      roles: string[];
+      tokenType: string;
+    }>(body.refreshToken);
+
+    if (payload.tokenType !== 'refresh') {
+      throw new UnauthorizedException('Refresh token inválido.');
+    }
+
+    return this.createTokens(payload.sub, payload.email, payload.roles);
+  }
+
+  private createTokens(id: string, email: string, roles: string[]) {
+    const accessPayload = { sub: id, email, roles, tokenType: 'access' };
+    const refreshPayload = { sub: id, email, roles, tokenType: 'refresh' };
 
     return {
-      access_token: this.jwtService.sign(payload, { expiresIn: '1d' }),
-      refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
+      access_token: this.jwtService.sign(accessPayload, { expiresIn: '1d' }),
+      refresh_token: this.jwtService.sign(refreshPayload, { expiresIn: '7d' }),
     };
   }
 
